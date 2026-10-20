@@ -1,0 +1,30 @@
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      GEOAI_LOG_LEVEL: ${GEOAI_LOG_LEVEL:-INFO}
+      GEOAI_COMMERCIAL_SOURCE: ${GEOAI_COMMERCIAL_SOURCE:-}
+      GEOAI_TERRITORIAL_SOURCE: ${GEOAI_TERRITORIAL_SOURCE:-}
+      GEOAI_OUTPUT_DIR: /app/data/processed
+    volumes:
+      - ./data:/app/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+  ui:
+    build: .
+    command: ["streamlit", "run", "src/geoopportunity/presentation/app.py", "--server.address=0.0.0.0", "--server.port=8501", "--server.headless=true"]
+    ports:
+      - "8501:8501"
+    environment:
+      GEOAI_API_URL: http://api:8000
+      GEOAI_OUTPUT_DIR: /app/data/processed
+    volumes:
+      - ./data:/app/data:ro
+    depends_on:
+      api:
+        condition: service_healthy
