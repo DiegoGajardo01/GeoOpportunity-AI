@@ -1,0 +1,9 @@
+.git
+.atl
+.venv
+.pytest_cache
+__pycache__
+*.egg-info
+data
+odd
+.env
